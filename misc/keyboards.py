@@ -1,12 +1,12 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
-from db_api.db_services import get_box_by_id, get_all_content_by_box_id, get_all_box
+from db_api.deta_db.services import get_all_content_by_box_id
 
-cb_kb = CallbackData('kb', 'box_id', 'action')
+cb_kb = CallbackData('kb', 'action', 'box_id')  # , 'content_id')
 
 cancel_inl_kb = InlineKeyboardMarkup(row_width=1)
-cancel_inl_kb.add(InlineKeyboardButton(text='отмена', callback_data=cb_kb.new(box_id='cancel', action='cancel')))
+cancel_inl_kb.add(InlineKeyboardButton(text='отмена', callback_data=cb_kb.new(box_id='', action='cancel')))
 
 
 def inl_kb_generator(box_id: str,
@@ -30,36 +30,14 @@ def inl_kb_generator(box_id: str,
     return inl_kb
 
 
-async def box_from_db(box_id):
-    box = await get_box_by_id(box_id)
-    if box:
-        contents = await get_all_content_by_box_id(box_id=box_id, list_view=True)
-        msg = f"<b>{box.get('box_name')}\n{box.get('place')}</b>\n\n" \
-              "Сейчас в ящике:\n" \
-              f"{contents if contents else 'ничего'}"
-        return msg
-    else:
-        return ''
-
-
-async def edit_contents_inl(box_id: str, cb_data_prefix: str) -> InlineKeyboardMarkup:
-    """Генерирует inline клавиатуру с кнопками-содержимое ящика"""
+async def edit_contents_inl(box_id: str, action: str) -> InlineKeyboardMarkup:
+    """Генерирует inline клавиатуру с кнопками-содержимое ящика (для редактирования или удаления)"""
     contents = await get_all_content_by_box_id(box_id)
     contents_kb = InlineKeyboardMarkup(row_width=1)
-    for item in contents:
-        contents_kb.add(InlineKeyboardButton(text=item.get('contents'),
+    for content in contents:
+        contents_kb.add(InlineKeyboardButton(text=content.get('content'),
                                              callback_data=cb_kb.new(
                                                  box_id=box_id,
-                                                 action=f"{cb_data_prefix}{item.get('key')}")))
+                                                 action=f"{action}{content.get('key')}")))
     contents_kb.add(InlineKeyboardButton(text='Назад', callback_data=cb_kb.new(box_id=box_id, action='back')))
     return contents_kb
-
-
-async def boxes_list(tuple_of_boxes: tuple = ()) -> str:
-    box_list = tuple_of_boxes if tuple_of_boxes else await get_all_box()
-    if box_list:
-        boxes = '\n'.join(
-            f"{box.get('box_name')}: {box.get('place')} /box_{box.get('key')}" for box in box_list)
-        return f"Имя : Место : Ссылка на ящик\n\n{boxes}\n\nДобавить новый /add_box" \
-               f"\nПоиск - отправь мне сообщение(что хочешь найти)"
-    return 'Нет ящиков.\n\nДобавить новый /add_box'

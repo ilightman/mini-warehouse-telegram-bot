@@ -39,6 +39,9 @@ async def bot_webhook(update: dict, request: Request):
                             status_code=status.HTTP_401_UNAUTHORIZED)
 
 
+@app.get('/docs')
+@app.get('/redocs')
+@app.get('/')
 @app.get(WEBHOOK_PATH)
 async def get_webhook():
     return JSONResponse(content={'detail': 'Not authorized! You are not supposed to be here!'},
@@ -50,11 +53,14 @@ async def shutdown():
     await on_shutdown(dp)
     await bot.session.close()
 
-# @app.get('/test')
+# @app.get('/init')
 # async def test():
 #     return {
 #         'webhook_url': WEBHOOK_URL,
 #         'get_webhook_method': API_TELEGRAM_URL + '/getwebhookinfo',
-#         'set_webhook_link': API_TELEGRAM_URL + f'/setWebhook?url={WEBHOOK_URL}&secret_token={SECRET_TOKEN}',
+#         'set_webhook_link': API_TELEGRAM_URL + f'/setWebhook?'
+#                                                f'url={WEBHOOK_URL}'
+#                                                f'&secret_token={SECRET_TOKEN}'
+#                                                f'&drop_pending_updates=True',
 #         'delete_webhook_link': API_TELEGRAM_URL + '/deleteWebhook',
 #     }

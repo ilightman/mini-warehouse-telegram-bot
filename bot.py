@@ -4,27 +4,24 @@ from datetime import datetime
 
 from aiogram import Dispatcher, types, Bot
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.utils import executor
 from dotenv import load_dotenv
 
-from db_api.deta_db_api import DB
+from handlers.callbacks import register_callbacks
+from handlers.message import register_message_handlers
 
 logging.getLogger(__name__)
 logging.basicConfig(format='%(asctime)s:%(funcName)s:%(message)s', level=logging.INFO)
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-PROJECT_KEY = os.getenv('PROJECT_KEY')
-PROJECT_ID = os.getenv('PROJECT_ID')
+
 bot = Bot(token=BOT_TOKEN, parse_mode=types.ParseMode.HTML)
 dp = Dispatcher(bot, storage=MemoryStorage())
-db = DB(project_key=PROJECT_KEY, project_id=PROJECT_ID)
+
 ADMIN = os.getenv("ADMIN")
 
 
 def register_all_handlers(disp: Dispatcher):
-    from handlers.callbacks import register_callbacks
-    from handlers.message import register_message_handlers
     register_callbacks(disp)
     register_message_handlers(disp)
 
@@ -61,8 +58,3 @@ async def on_shutdown(disp: Dispatcher):
     await disp.storage.close()
     await disp.storage.wait_closed()
     logging.info('Бот выключается')
-
-
-if __name__ == '__main__':
-
-    executor.start_polling(dp, on_startup=on_startup, on_shutdown=on_shutdown, skip_updates=True)

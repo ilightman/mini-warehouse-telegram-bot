@@ -28,9 +28,9 @@ async def edit_cb(cb: types.CallbackQuery, callback_data: dict, state: FSMContex
         box = await get_box_by_id(user_id=user_id, box_id=box_id)
         await cb.message.delete()
         if 'name' in action:
-            msg = f"Текущее имя: <code>{box.get('box_name')}</code>\nВведите новое"
+            msg = f"Текущее имя: <code>{box.name}</code>\nВведите новое"
         else:
-            msg = f"Текущее место: <code>{box.get('place')}</code>\nВведите новое"
+            msg = f"Текущее место: <code>{box.place}</code>\nВведите новое"
         await cb.message.answer(msg, reply_markup=box_inl_kb(box_id))
         await state.update_data(box_id=box_id)
         await state.set_state("upd_name" if 'name' in action else "upd_place")
@@ -41,7 +41,7 @@ async def edit_cb(cb: types.CallbackQuery, callback_data: dict, state: FSMContex
     elif action.startswith('edit_item_'):
         content_id = action[10:]
         content = await get_content_by_id(content_id)
-        await cb.message.answer(f"<code>{content.get('contents')}</code>\n"
+        await cb.message.answer(f"<code>{content.name}</code>\n"
                                 f"нажми, чтобы скопировать и отправь мне исправленное")
         await state.update_data(content_id=content_id)
         await state.set_state('edit_item')
@@ -56,7 +56,7 @@ async def delete_callback_handler(cb: types.CallbackQuery, callback_data: dict):
         return
 
     await cb.answer()
-    if action == 'delete_contents_by_id':
+    if action == 'delete_content':
         contents_inl_kb = await box_content_inl_kb(box_id, 'delete_item_')
         await cb.message.edit_reply_markup(reply_markup=contents_inl_kb)
     elif action.startswith('delete_item_'):

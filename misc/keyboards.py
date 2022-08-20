@@ -16,7 +16,7 @@ def box_inl_kb(box_id: str,
     """Формирует инлайн-клавиатуру с указанными параметрами"""
     menu_dict = {'Изменить содержимое': 'edit_items', 'Добавить в ящик': 'edit_contents',
                  'Изменить имя': 'edit_name', 'Изменить место': 'edit_place',
-                 'Удалить содержимое': 'delete_contents_by_id',
+                 'Удалить содержимое': 'delete_content',
                  'Удалить ящик': 'delete_confirm'}  # , 'Назад': 'back'
     inl_kb = InlineKeyboardMarkup(row_width=1)
     if menu_only:
@@ -36,9 +36,9 @@ async def box_content_inl_kb(box_id: str, action: str) -> InlineKeyboardMarkup:
     contents = await get_all_content_by_box_id(box_id)
     contents_kb = InlineKeyboardMarkup(row_width=1)
     for content in contents:
-        contents_kb.add(InlineKeyboardButton(text=content.get('content'),
+        contents_kb.add(InlineKeyboardButton(text=content.name,
                                              callback_data=cb_kb.new(
                                                  box_id=box_id,
-                                                 action=f"{action}{content.get('key')}")))
+                                                 action=f"{action}{content.key}")))
     contents_kb.add(InlineKeyboardButton(text='Назад', callback_data=cb_kb.new(box_id=box_id, action='back')))
     return contents_kb

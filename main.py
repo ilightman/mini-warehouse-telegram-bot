@@ -53,6 +53,7 @@ async def shutdown():
     await on_shutdown(dp)
     await bot.session.close()
 
+
 # @app.get('/init')
 # async def test():
 #     return {

@@ -34,7 +34,8 @@ async def help_command(message: types.Message):
 
 async def all_box(message: types.Message):
     """Отображение всех ящиков с названием и расположением"""
-    await message.answer(await all_boxes_view(user_id=message.from_user.id))
+    msg = await all_boxes_view(user_id=message.from_user.id)
+    await message.answer(msg)
     logging.info(f'{message.from_user.id}')
 
 
@@ -61,7 +62,8 @@ async def add_name_handler(message: types.Message, state: FSMContext):
         await state.set_state('add_name')
         logging.error(f'failed:"/"in_name:{message.from_user.id}')
     elif box_name:
-        box_id = await create_box(user_id=message.from_user.id, box_name=box_name)
+        box = await create_box(user_id=message.from_user.id, box_name=box_name)
+        box_id = box.key
         msg_dict = await box_view(user_id=message.from_user.id, box_id=box_id, menu_only=True)
         await message.answer(**msg_dict)
         await state.finish()
@@ -90,8 +92,8 @@ async def edit_content_item(message: types.Message, state: FSMContext):
         logging.error(f'failed:{message.from_user.id}')
     else:
         value = message.text.lower()
-        box_id = await update_content_name_by_id(content_id, value)
-        msg_dict = await box_view(user_id=message.from_user.id, box_id=box_id, menu_only=True)
+        content = await update_content_name_by_id(content_id, value)
+        msg_dict = await box_view(user_id=message.from_user.id, box_id=content.box_key, menu_only=True)
         await message.answer(**msg_dict)
         await state.finish()
         logging.info(f'success:{message.from_user.id}')

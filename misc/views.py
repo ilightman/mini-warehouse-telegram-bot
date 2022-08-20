@@ -1,5 +1,5 @@
 from db_api.deta_db.services import get_all_box, get_all_content_by_box_id, get_box_by_id, search_content_in_box
-from misc.keyboards import inl_kb_generator
+from misc.keyboards import box_inl_kb
 
 HELP_MESSAGE_TEXT = """Данный бот позволяет сделать маленький и удобный персональный склад.
 
@@ -22,9 +22,11 @@ EXAMPLE_BOXES_TEXT = 'Ящик для примера, удалить содер�
 
 
 async def box_with_contents(box: dict):
-    contents = await get_all_content_by_box_id(box_id=box.get('key'), list_view=True)
+    """Представление ящика с его содержимым в текстовом виде"""
+    contents = await get_all_content_by_box_id(box_id=box.get('key'))
+    contents_list = '\n'.join(content.get('content') for content in contents)
     text = f"<b>{box.get('box_name')}\n{box.get('place')}</b>\n\n" \
-           f"Сейчас в ящике:\n{contents if contents else 'ничего'}"
+           f"Сейчас в ящике:\n{contents_list if contents_list else 'ничего'}"
     return text
 
 
@@ -37,7 +39,7 @@ async def box_view(user_id: int, box_id: str,
     box = await get_box_by_id(user_id, box_id)
     if type(box) is dict:
         return {'text': await box_with_contents(box),
-                'reply_markup': inl_kb_generator(box_id, menu_only, box_menu, confirm_menu)
+                'reply_markup': box_inl_kb(box_id, menu_only, box_menu, confirm_menu)
                 }
     elif type(box) is bool:
         return {'text': 'Вы не можете просматривать или редактировать чужие ящики!'}
@@ -57,11 +59,13 @@ def boxes_view(boxes: tuple = None) -> str:
 
 
 async def all_boxes_view(user_id: int) -> str:
+    """Формирует представление для всех ящиков пользователя в текстовом виде"""
     boxes = await get_all_box(user_id)
     return boxes_view(boxes)
 
 
 async def search_item_in_box(user_id: int, item: str) -> str:
+    """Формирует представление для поиска по всем ящикам"""
     boxes = await search_content_in_box(user_id=user_id, item_to_find=item)
     if boxes:
         return f"<b>Найдено в:</b>\n\n{boxes_view(boxes)}"

@@ -27,6 +27,7 @@ async def start_command(message: types.Message):
 
 
 async def help_command(message: types.Message):
+    """Отвечает текстом на команду /help"""
     msg = HELP_MESSAGE_TEXT
     await message.answer(msg)
 
@@ -46,12 +47,14 @@ async def select_box_by_number(message: types.Message):
 
 
 async def add_box(message: types.Message, state: FSMContext):
+    """Создает новый ящик для текущего пользователя"""
     await message.answer("Введи имя нового ящика:", reply_markup=cancel_inl_kb)
     await state.set_state('add_name')
     logging.info(f'{message.from_user.id}')
 
 
 async def add_name_handler(message: types.Message, state: FSMContext):
+    """Добавляет имя новому ящику для текущего пользователя"""
     box_name = message.text.title()
     if box_name.startswith('/'):
         await message.delete()
@@ -66,6 +69,7 @@ async def add_name_handler(message: types.Message, state: FSMContext):
 
 
 async def add_contents(message: types.Message, state: FSMContext):
+    """Добавляет содержимое в ящик пользователя"""
     contents_to_add = tuple(value.strip().lower() for value in message.text.split(','))
     data = await state.get_data()
     box_id = data.get('box_id')
@@ -77,6 +81,7 @@ async def add_contents(message: types.Message, state: FSMContext):
 
 
 async def edit_content_item(message: types.Message, state: FSMContext):
+    """Изменяет имя содержимого в ящике"""
     content = await state.get_data('content_id')
     content_id = content.get('content_id')
     await message.delete()
@@ -93,6 +98,7 @@ async def edit_content_item(message: types.Message, state: FSMContext):
 
 
 async def update_name_place(message: types.Message, state: FSMContext):
+    """Изменяет имя или место ящика"""
     n_state = await state.get_state()
     message_text = message.text
     await message.delete()
@@ -121,16 +127,17 @@ async def search(message: types.Message):
     logging.info(f'{message.from_user.id}:{message.text}')
 
 
-def register_message_handlers(disp: Dispatcher):
-    disp.register_message_handler(start_command, CommandStart())
-    disp.register_message_handler(help_command, CommandHelp())
+def register_message_handlers(dp: Dispatcher):
+    """Регистрирует все хэндлеры в данном файле"""
+    dp.register_message_handler(start_command, CommandStart())
+    dp.register_message_handler(help_command, CommandHelp())
 
-    disp.register_message_handler(all_box, commands='all_box')
-    disp.register_message_handler(add_box, commands="add_box")
-    disp.register_message_handler(select_box_by_number, regexp=r'^/box_([a-zA-Z0-9]{1,})$')
-    disp.register_message_handler(add_name_handler, state="add_name")
-    disp.register_message_handler(add_contents, state="add_contents")
-    disp.register_message_handler(edit_content_item, state="edit_item")
-    disp.register_message_handler(update_name_place, state="upd_name")
-    disp.register_message_handler(update_name_place, state="upd_place")
-    disp.register_message_handler(search)
+    dp.register_message_handler(all_box, commands='all_box')
+    dp.register_message_handler(add_box, commands="add_box")
+    dp.register_message_handler(select_box_by_number, regexp=r'^/box_([a-zA-Z0-9]{1,})$')
+    dp.register_message_handler(add_name_handler, state="add_name")
+    dp.register_message_handler(add_contents, state="add_contents")
+    dp.register_message_handler(edit_content_item, state="edit_item")
+    dp.register_message_handler(update_name_place, state="upd_name")
+    dp.register_message_handler(update_name_place, state="upd_place")
+    dp.register_message_handler(search)

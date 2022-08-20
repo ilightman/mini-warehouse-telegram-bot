@@ -215,3 +215,4 @@ cython_debug/
 .deta/
 .detaignore
 .bot_local.py
+tests/

@@ -9,10 +9,11 @@ cancel_inl_kb = InlineKeyboardMarkup(row_width=1)
 cancel_inl_kb.add(InlineKeyboardButton(text='отмена', callback_data=cb_kb.new(box_id='', action='cancel')))
 
 
-def inl_kb_generator(box_id: str,
-                     menu_only: bool = False,
-                     box_menu: bool = False,
-                     confirm_menu: bool = False) -> InlineKeyboardMarkup:
+def box_inl_kb(box_id: str,
+               menu_only: bool = False,
+               box_menu: bool = False,
+               confirm_menu: bool = False) -> InlineKeyboardMarkup:
+    """Формирует инлайн-клавиатуру с указанными параметрами"""
     menu_dict = {'Изменить содержимое': 'edit_items', 'Добавить в ящик': 'edit_contents',
                  'Изменить имя': 'edit_name', 'Изменить место': 'edit_place',
                  'Удалить содержимое': 'delete_contents_by_id',
@@ -30,7 +31,7 @@ def inl_kb_generator(box_id: str,
     return inl_kb
 
 
-async def edit_contents_inl(box_id: str, action: str) -> InlineKeyboardMarkup:
+async def box_content_inl_kb(box_id: str, action: str) -> InlineKeyboardMarkup:
     """Генерирует inline клавиатуру с кнопками-содержимое ящика (для редактирования или удаления)"""
     contents = await get_all_content_by_box_id(box_id)
     contents_kb = InlineKeyboardMarkup(row_width=1)

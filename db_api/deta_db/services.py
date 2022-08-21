@@ -32,12 +32,15 @@ async def check_user(user: User) -> None:
         await create_user(user)
 
 
-async def get_box_by_id(user_id: int, box_id: str) -> Union[Box, bool]:
+async def get_box(user_id: int, box_id: str) -> Union[Box, bool, None]:
     """Получает ящик для указанного пользователя и проверяет его ли это ящик. Вызывает метод класса БД"""
-    box = Box.parse_obj(db.get_box(box_id))
-    if box.user_id == str(user_id):
-        return box
-    return False
+    box = db.get_box(box_id)
+    if box:
+        box = Box.parse_obj(box)
+        if box.user_id == str(user_id):
+            return box
+        return False
+    return None
 
 
 async def get_all_box(user_id: int) -> Union[Tuple[Box, ...], None]:

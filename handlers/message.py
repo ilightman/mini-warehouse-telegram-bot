@@ -3,12 +3,15 @@ import logging
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import CommandStart, CommandHelp
-from aiogram.utils.deep_linking import get_start_link
+# from aiogram.utils.deep_linking import get_start_link
 
 from db_api.deta_db.services import update_box_name_or_place, update_content_name_by_id, \
     add_contents_to_box_by_id, create_box, check_user
+from locales.i18n_config import i18n
 from misc.keyboards import cancel_inl_kb
 from misc.views import box_view, HELP_MESSAGE_TEXT, search_item_in_box, all_boxes_view
+
+_ = i18n.gettext
 
 
 async def start_command(message: types.Message):
@@ -19,11 +22,11 @@ async def start_command(message: types.Message):
     #     return
     # msg = await get_start_link(payload='box_309329130')
     # await message.answer(msg)
-
-    msg = "Показать все ящики /all_box\n" \
-          "Добавить новый ящик /add_box\n" \
-          "Для поиска отправьте любое слово\n"
-    await message.answer(msg)
+    await message.answer(message.as_json())
+    # msg = _(
+    #     "Показать все ящики /all_box{sr}Добавить новый ящик /add_box{sr}Для поиска отправьте любое слово{sr}").format(
+    #     sr='\n')
+    # await message.answer(msg)
 
 
 async def help_command(message: types.Message):
@@ -49,7 +52,7 @@ async def select_box_by_number(message: types.Message):
 
 async def add_box(message: types.Message, state: FSMContext):
     """Создает новый ящик для текущего пользователя"""
-    await message.answer("Введи имя нового ящика:", reply_markup=cancel_inl_kb)
+    await message.answer(_("Введи имя нового ящика:"), reply_markup=cancel_inl_kb)
     await state.set_state('add_name')
     logging.info(f'{message.from_user.id}')
 
@@ -72,7 +75,7 @@ async def add_name_handler(message: types.Message, state: FSMContext):
 
 async def add_contents(message: types.Message, state: FSMContext):
     """Добавляет содержимое в ящик пользователя"""
-    contents_to_add = tuple(value.strip().lower() for value in message.text.split(','))
+    contents_to_add = tuple(value.strip().lower() for value in message.text.split(',') if not value.startswith('/'))
     data = await state.get_data()
     box_id = data.get('box_id')
     await add_contents_to_box_by_id(message.from_user.id, box_id, contents_to_add)
@@ -115,7 +118,8 @@ async def update_name_place(message: types.Message, state: FSMContext):
         if n_state == "upd_place":
             await update_box_name_or_place(box_id, message_text, place=True)
         msg_dict = await box_view(user_id=message.from_user.id, box_id=box_id, menu_only=True)
-        await message.answer(f"Информация обновлена:\n\n" + msg_dict['text'], reply_markup=msg_dict['reply_markup'])
+        await message.answer(_("Информация обновлена:") + "\n\n" + msg_dict['text'],
+                             reply_markup=msg_dict['reply_markup'])
         await state.finish()
         logging.info(f'success:{message.from_user.id}')
 
@@ -130,7 +134,7 @@ async def search(message: types.Message):
 
 
 def register_message_handlers(dp: Dispatcher):
-    """Регистрирует все хэндлеры в данном файле"""
+    """Регистрирует все message_handlers в текущем файле"""
     dp.register_message_handler(start_command, CommandStart())
     dp.register_message_handler(help_command, CommandHelp())
 

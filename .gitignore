@@ -3,7 +3,7 @@
 .detaignore
 .env
 .bot_local.py
-tests/
+!tests/
 __pycache__/
 .pytest_cache/
 locales/

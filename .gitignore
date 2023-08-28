@@ -1,0 +1,13 @@
+.idea/
+.deta/
+.detaignore
+.env
+.bot_local.py
+bot_files
+tests/
+__pycache__/
+.pytest_cache/
+locales/
+.space
+Spacefile
+venv
